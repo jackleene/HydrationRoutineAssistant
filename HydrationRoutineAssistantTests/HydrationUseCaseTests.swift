@@ -86,6 +86,46 @@ struct LogWaterIntakeUseCaseTests {
         #expect(await repository.savedIntakes.isEmpty)
         #expect(!(try #require(expectedFailure.recoverySuggestion)).isEmpty)
     }
+
+    @Test("A goal from another day cannot receive the drinking day's water intake")
+    func wrongDayGoalPreventsRecording() async throws {
+        let date = HydrationUseCaseFixtures.now
+        let calendar = HydrationUseCaseFixtures.calendar
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: date))
+        let goal = try HydrationGoal(date: yesterday, targetMillilitres: 2_000)
+        let repository = MockHydrationRepository(goal: goal)
+        let useCase = LogWaterIntakeUseCase(repository: repository, calendar: calendar, now: { date })
+
+        await #expect(throws: LogWaterIntakeUseCase.Failure.goalDayMismatch) {
+            try await useCase.execute(amountMillilitres: 250, recordedAt: date)
+        }
+        #expect(await repository.savedIntakes.isEmpty)
+    }
+
+    @Test("Goal changes during recording produce actionable intake errors", arguments: [
+        (HydrationRepositoryError.missingGoal, LogWaterIntakeUseCase.Failure.missingDailyGoal),
+        (.goalDayMismatch, .goalDayMismatch)
+    ])
+    func changedGoalDuringSaveUsesIntakeErrors(
+        _ repositoryFailure: HydrationRepositoryError,
+        expectedFailure: LogWaterIntakeUseCase.Failure
+    ) async throws {
+        let date = HydrationUseCaseFixtures.now
+        let goal = try HydrationGoal(date: date, targetMillilitres: 2_000)
+        let repository = MockHydrationRepository(
+            goal: goal, failingOperation: .saveIntake, injectedFailure: repositoryFailure
+        )
+        let useCase = LogWaterIntakeUseCase(
+            repository: repository, calendar: HydrationUseCaseFixtures.calendar, now: { date }
+        )
+
+        await #expect(throws: expectedFailure) {
+            try await useCase.execute(amountMillilitres: 250, recordedAt: date)
+        }
+        #expect(await repository.savedIntakes.isEmpty)
+        #expect(!(try #require(expectedFailure.errorDescription)).isEmpty)
+        #expect(!(try #require(expectedFailure.recoverySuggestion)).isEmpty)
+    }
 }
 
 struct UpdateDailyHydrationGoalUseCaseTests {
@@ -135,6 +175,69 @@ struct UpdateDailyHydrationGoalUseCaseTests {
         }
         #expect(await repository.requestedGoalDates.isEmpty)
         #expect(await repository.savedGoals.isEmpty)
+    }
+
+    @Test("A goal from another day cannot be updated for the selected day")
+    func wrongDayGoalPreventsTargetUpdate() async throws {
+        let date = HydrationUseCaseFixtures.now
+        let calendar = HydrationUseCaseFixtures.calendar
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: date))
+        let goal = try HydrationGoal(date: yesterday, targetMillilitres: 2_000)
+        let repository = MockHydrationRepository(goal: goal)
+        let useCase = UpdateDailyHydrationGoalUseCase(repository: repository, calendar: calendar)
+
+        await #expect(throws: UpdateDailyHydrationGoalUseCase.Failure.goalDayMismatch) {
+            try await useCase.execute(targetMillilitres: 2_500, on: date)
+        }
+        #expect(await repository.savedGoals.isEmpty)
+    }
+
+    @Test("Daily goal edits explain goal loading and saving failures", arguments: [
+        (MockHydrationRepository.Operation.fetchGoal, UpdateDailyHydrationGoalUseCase.Failure.unableToLoadDailyGoal),
+        (.saveGoal, .unableToSaveDailyGoal)
+    ])
+    func goalEditingFailuresUseDomainErrors(
+        _ operation: MockHydrationRepository.Operation,
+        expectedFailure: UpdateDailyHydrationGoalUseCase.Failure
+    ) async throws {
+        let date = HydrationUseCaseFixtures.now
+        let goal = try HydrationGoal(date: date, targetMillilitres: 2_000)
+        let repository = MockHydrationRepository(goal: goal, failingOperation: operation)
+        let useCase = UpdateDailyHydrationGoalUseCase(
+            repository: repository, calendar: HydrationUseCaseFixtures.calendar
+        )
+
+        await #expect(throws: expectedFailure) {
+            try await useCase.execute(targetMillilitres: 2_500, on: date)
+        }
+        #expect(await repository.savedGoals.isEmpty)
+        #expect(!(try #require(expectedFailure.errorDescription)).isEmpty)
+        #expect(!(try #require(expectedFailure.recoverySuggestion)).isEmpty)
+    }
+
+    @Test("Conflicting goal saves report the correct daily goal error", arguments: [
+        (HydrationRepositoryError.duplicateDailyGoal, UpdateDailyHydrationGoalUseCase.Failure.dailyGoalAlreadyExists),
+        (.goalDayMismatch, .goalDayMismatch)
+    ])
+    func conflictingGoalSaveUsesDomainErrors(
+        _ repositoryFailure: HydrationRepositoryError,
+        expectedFailure: UpdateDailyHydrationGoalUseCase.Failure
+    ) async throws {
+        let date = HydrationUseCaseFixtures.now
+        let goal = try HydrationGoal(date: date, targetMillilitres: 2_000)
+        let repository = MockHydrationRepository(
+            goal: goal, failingOperation: .saveGoal, injectedFailure: repositoryFailure
+        )
+        let useCase = UpdateDailyHydrationGoalUseCase(
+            repository: repository, calendar: HydrationUseCaseFixtures.calendar
+        )
+
+        await #expect(throws: expectedFailure) {
+            try await useCase.execute(targetMillilitres: 2_500, on: date)
+        }
+        #expect(await repository.savedGoals.isEmpty)
+        #expect(!(try #require(expectedFailure.errorDescription)).isEmpty)
+        #expect(!(try #require(expectedFailure.recoverySuggestion)).isEmpty)
     }
 }
 
@@ -198,5 +301,20 @@ struct FetchTodayHydrationProgressUseCaseTests {
             try await useCase.execute()
         }
         #expect(!(try #require(expectedFailure.recoverySuggestion)).isEmpty)
+    }
+
+    @Test("A previous day's goal cannot be used to display today's progress")
+    func wrongDayGoalPreventsTodayProgress() async throws {
+        let date = HydrationUseCaseFixtures.now
+        let calendar = HydrationUseCaseFixtures.calendar
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: date))
+        let goal = try HydrationGoal(date: yesterday, targetMillilitres: 2_000)
+        let repository = MockHydrationRepository(goal: goal)
+        let useCase = FetchTodayHydrationProgressUseCase(repository: repository, calendar: calendar, now: { date })
+
+        await #expect(throws: FetchTodayHydrationProgressUseCase.Failure.goalNotForToday) {
+            try await useCase.execute()
+        }
+        #expect(await repository.intakeQueries.isEmpty)
     }
 }
