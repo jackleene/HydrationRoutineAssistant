@@ -15,6 +15,9 @@
 		41163BFD307568FE0056845C /* HydrationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163BFC307568FE0056845C /* HydrationRepository.swift */; };
 		41163BFF3075692C0056845C /* CoreDataHydrationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163BFE3075692C0056845C /* CoreDataHydrationRepository.swift */; };
 		41163C01307569390056845C /* HydrationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C00307569390056845C /* HydrationPersistence.swift */; };
+		41163C113075913C0056845C /* UpdateDailyHydrationGoalUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C103075913C0056845C /* UpdateDailyHydrationGoalUseCase.swift */; };
+		41163C123075913C0056845C /* LogWaterIntakeUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C0F3075913C0056845C /* LogWaterIntakeUseCase.swift */; };
+		41163C133075913C0056845C /* FetchTodayHydrationProgressUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C0E3075913C0056845C /* FetchTodayHydrationProgressUseCase.swift */; };
 		A00000000000000000000001 /* HydrationRoutineAssistantApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -39,6 +42,9 @@
 		41163BFC307568FE0056845C /* HydrationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationRepository.swift; sourceTree = "<group>"; };
 		41163BFE3075692C0056845C /* CoreDataHydrationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataHydrationRepository.swift; sourceTree = "<group>"; };
 		41163C00307569390056845C /* HydrationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationPersistence.swift; sourceTree = "<group>"; };
+		41163C0E3075913C0056845C /* FetchTodayHydrationProgressUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchTodayHydrationProgressUseCase.swift; sourceTree = "<group>"; };
+		41163C0F3075913C0056845C /* LogWaterIntakeUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWaterIntakeUseCase.swift; sourceTree = "<group>"; };
+		41163C103075913C0056845C /* UpdateDailyHydrationGoalUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateDailyHydrationGoalUseCase.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationRoutineAssistantApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* HydrationRoutineAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HydrationRoutineAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -104,6 +110,9 @@
 		D00000000000000000000004 /* UseCases */ = {
 			isa = PBXGroup;
 			children = (
+				41163C0E3075913C0056845C /* FetchTodayHydrationProgressUseCase.swift */,
+				41163C0F3075913C0056845C /* LogWaterIntakeUseCase.swift */,
+				41163C103075913C0056845C /* UpdateDailyHydrationGoalUseCase.swift */,
 			);
 			path = UseCases;
 			sourceTree = "<group>";
@@ -268,6 +277,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				41163C113075913C0056845C /* UpdateDailyHydrationGoalUseCase.swift in Sources */,
+				41163C123075913C0056845C /* LogWaterIntakeUseCase.swift in Sources */,
+				41163C133075913C0056845C /* FetchTodayHydrationProgressUseCase.swift in Sources */,
 				A00000000000000000000001 /* HydrationRoutineAssistantApp.swift in Sources */,
 				41163C01307569390056845C /* HydrationPersistence.swift in Sources */,
 				41163BFD307568FE0056845C /* HydrationRepository.swift in Sources */,
