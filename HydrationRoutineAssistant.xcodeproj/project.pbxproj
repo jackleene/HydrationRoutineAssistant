@@ -12,6 +12,9 @@
 		41163BEF307553650056845C /* WaterIntakeEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163BED307553650056845C /* WaterIntakeEntry.swift */; };
 		41163BF0307553650056845C /* HydrationProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163BEC307553650056845C /* HydrationProgress.swift */; };
 		41163BF9307563A90056845C /* HydrationModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 41163BF7307563A90056845C /* HydrationModel.xcdatamodeld */; };
+		41163BFD307568FE0056845C /* HydrationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163BFC307568FE0056845C /* HydrationRepository.swift */; };
+		41163BFF3075692C0056845C /* CoreDataHydrationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163BFE3075692C0056845C /* CoreDataHydrationRepository.swift */; };
+		41163C01307569390056845C /* HydrationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C00307569390056845C /* HydrationPersistence.swift */; };
 		A00000000000000000000001 /* HydrationRoutineAssistantApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -33,6 +36,9 @@
 		41163BEC307553650056845C /* HydrationProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationProgress.swift; sourceTree = "<group>"; };
 		41163BED307553650056845C /* WaterIntakeEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterIntakeEntry.swift; sourceTree = "<group>"; };
 		41163BF8307563A90056845C /* HydrationModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HydrationModel.xcdatamodel; sourceTree = "<group>"; };
+		41163BFC307568FE0056845C /* HydrationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationRepository.swift; sourceTree = "<group>"; };
+		41163BFE3075692C0056845C /* CoreDataHydrationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataHydrationRepository.swift; sourceTree = "<group>"; };
+		41163C00307569390056845C /* HydrationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationPersistence.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationRoutineAssistantApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* HydrationRoutineAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HydrationRoutineAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -105,6 +111,7 @@
 		D00000000000000000000005 /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
+				41163BFC307568FE0056845C /* HydrationRepository.swift */,
 			);
 			path = Repositories;
 			sourceTree = "<group>";
@@ -112,6 +119,8 @@
 		D00000000000000000000006 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				41163BFE3075692C0056845C /* CoreDataHydrationRepository.swift */,
+				41163C00307569390056845C /* HydrationPersistence.swift */,
 				41163BF7307563A90056845C /* HydrationModel.xcdatamodeld */,
 			);
 			path = Data;
@@ -260,7 +269,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000000000000000000001 /* HydrationRoutineAssistantApp.swift in Sources */,
+				41163C01307569390056845C /* HydrationPersistence.swift in Sources */,
+				41163BFD307568FE0056845C /* HydrationRepository.swift in Sources */,
 				A00000000000000000000002 /* ContentView.swift in Sources */,
+				41163BFF3075692C0056845C /* CoreDataHydrationRepository.swift in Sources */,
 				41163BEE307553650056845C /* HydrationGoal.swift in Sources */,
 				41163BEF307553650056845C /* WaterIntakeEntry.swift in Sources */,
 				41163BF9307563A90056845C /* HydrationModel.xcdatamodeld in Sources */,
