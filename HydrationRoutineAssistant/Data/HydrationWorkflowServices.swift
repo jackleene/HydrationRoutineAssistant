@@ -36,7 +36,10 @@ enum HydrationComposition {
         let container = try await HydrationPersistence.makeContainer()
         let repository = CoreDataHydrationRepository(container: container, calendar: calendar)
         return HydrationWorkspaceViewModel(
-            repository: repository, routineStore: UserDefaultsHydrationReminderRoutineStore(), calendar: calendar
+            repository: repository, routineStore: UserDefaultsHydrationReminderRoutineStore(), calendar: calendar,
+            widgetPublisher: PublishHydrationWidgetSnapshotUseCase(
+                store: AppGroupHydrationWidgetSnapshotStore(), calendar: calendar
+            )
         )
     }
 }

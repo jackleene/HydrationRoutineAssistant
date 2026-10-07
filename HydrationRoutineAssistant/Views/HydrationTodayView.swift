@@ -15,6 +15,14 @@ struct HydrationTodayView: View {
                             .padding(.top, 8)
                     }
                 }
+                if let issue = model.widgetIssue {
+                    HydrationCard {
+                        HydrationIssueView(issue: issue)
+                        Button("Retry sharing progress") { Task { await model.refreshToday() } }
+                            .frame(minHeight: 44)
+                            .disabled(model.isLoadingToday)
+                    }
+                }
                 if let progress = model.todayProgress {
                     HydrationProgressCard(progress: progress)
                     Button { model.openIntakeForm() } label: {

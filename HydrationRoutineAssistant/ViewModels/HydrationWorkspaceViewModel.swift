@@ -50,6 +50,7 @@ final class HydrationWorkspaceViewModel {
     private(set) var isLoadingToday = false
     private(set) var todayConfirmation: String?
     private(set) var lastSavedIntakeID: UUID?
+    private(set) var widgetIssue: HydrationIssue?
 
     var historyDate = Date()
     private(set) var history: HydrationDayHistory?
@@ -79,17 +80,20 @@ final class HydrationWorkspaceViewModel {
     let calendar: Calendar
     private let repository: any HydrationRepository
     private let routineStore: any HydrationReminderRoutineStore
+    private let widgetPublisher: PublishHydrationWidgetSnapshotUseCase?
     private var todayRequest = UUID()
     private var historyRequest = UUID()
     private var goalRequest = UUID()
 
     init(
         repository: any HydrationRepository, routineStore: any HydrationReminderRoutineStore,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        widgetPublisher: PublishHydrationWidgetSnapshotUseCase? = nil
     ) {
         self.repository = repository
         self.routineStore = routineStore
         self.calendar = calendar
+        self.widgetPublisher = widgetPublisher
         let routine: HydrationReminderRoutine
         do {
             routine = try routineStore.load() ?? .initial
@@ -123,15 +127,26 @@ final class HydrationWorkspaceViewModel {
             guard request == todayRequest, !Task.isCancelled else { return }
             todayProgress = progress
             todayEntries = records.entries
+            publishWidgetSnapshot(at: referenceDate)
         } catch FetchTodayHydrationProgressUseCase.Failure.missingTodayGoal {
             guard request == todayRequest, !Task.isCancelled else { return }
             todayProgress = nil
             todayEntries = []
+            publishWidgetSnapshot(at: referenceDate)
         } catch {
             guard request == todayRequest, !Task.isCancelled else { return }
             todayIssue = HydrationIssue(error)
             todayProgress = nil
             todayEntries = []
+        }
+    }
+
+    private func publishWidgetSnapshot(at date: Date) {
+        do {
+            try widgetPublisher?.execute(progress: todayProgress, entries: todayEntries, at: date)
+            widgetIssue = nil
+        } catch {
+            widgetIssue = HydrationIssue(error)
         }
     }
 

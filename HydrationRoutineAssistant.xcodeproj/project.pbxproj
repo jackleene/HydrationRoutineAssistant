@@ -29,6 +29,7 @@
 		41163C293075D8C40056845C /* HydrationUIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C253075D8C40056845C /* HydrationUIComponents.swift */; };
 		41163C2A3075D8C40056845C /* HydrationReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C233075D8C40056845C /* HydrationReminderView.swift */; };
 		41163C2B3075D8C40056845C /* HydrationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C213075D8C40056845C /* HydrationHistoryView.swift */; };
+		41163C363075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C353075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift */; };
 		A00000000000000000000001 /* HydrationRoutineAssistantApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -67,6 +68,7 @@
 		41163C233075D8C40056845C /* HydrationReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationReminderView.swift; sourceTree = "<group>"; };
 		41163C243075D8C40056845C /* HydrationTodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationTodayView.swift; sourceTree = "<group>"; };
 		41163C253075D8C40056845C /* HydrationUIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationUIComponents.swift; sourceTree = "<group>"; };
+		41163C353075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishHydrationWidgetSnapshotUseCase.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationRoutineAssistantApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* HydrationRoutineAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HydrationRoutineAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,6 +76,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		41163BE1307550DC0056845C /* HydrationRoutineAssistantTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = HydrationRoutineAssistantTests; sourceTree = "<group>"; };
+		41163C323075ECDD0056845C /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +109,7 @@
 		D00000000000000000000002 /* HydrationRoutineAssistant */ = {
 			isa = PBXGroup;
 			children = (
+				41163C323075ECDD0056845C /* Shared */,
 				41163BDA307550C20056845C /* Assets.xcassets */,
 				B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */,
 				D00000000000000000000003 /* Domain */,
@@ -133,6 +137,7 @@
 		D00000000000000000000004 /* UseCases */ = {
 			isa = PBXGroup;
 			children = (
+				41163C353075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift */,
 				41163C1A3075D8900056845C /* HydrationWorkflowUseCases.swift */,
 				41163C0E3075913C0056845C /* FetchTodayHydrationProgressUseCase.swift */,
 				41163C0F3075913C0056845C /* LogWaterIntakeUseCase.swift */,
@@ -237,6 +242,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				41163C323075ECDD0056845C /* Shared */,
+			);
 			name = HydrationRoutineAssistant;
 			productName = HydrationRoutineAssistant;
 			productReference = B00000000000000000000003 /* HydrationRoutineAssistant.app */;
@@ -330,6 +338,7 @@
 				41163C2B3075D8C40056845C /* HydrationHistoryView.swift in Sources */,
 				41163C1D3075D8990056845C /* HydrationWorkflowServices.swift in Sources */,
 				41163C1B3075D8900056845C /* HydrationWorkflowUseCases.swift in Sources */,
+				41163C363075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift in Sources */,
 				41163BEF307553650056845C /* WaterIntakeEntry.swift in Sources */,
 				41163BF9307563A90056845C /* HydrationModel.xcdatamodeld in Sources */,
 				41163BF0307553650056845C /* HydrationProgress.swift in Sources */,
@@ -512,6 +521,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = HydrationRoutineAssistant/HydrationRoutineAssistant.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -537,6 +547,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = HydrationRoutineAssistant/HydrationRoutineAssistant.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
