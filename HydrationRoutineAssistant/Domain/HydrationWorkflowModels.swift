@@ -18,6 +18,11 @@ struct HydrationReminderRoutine: Codable, Equatable, Sendable {
         intervalMinutes: 60, weekdays: [2, 3, 4, 5, 6]
     )
 
+    func disablingReminders() -> Self {
+        Self(isEnabled: false, startMinute: startMinute, endMinute: endMinute,
+             intervalMinutes: intervalMinutes, weekdays: weekdays)
+    }
+
     func validate() throws {
         guard (0..<1_440).contains(startMinute), (0..<1_440).contains(endMinute),
               startMinute < endMinute else { throw ValidationError.invalidTimeWindow }
@@ -33,6 +38,23 @@ struct HydrationReminderRoutine: Codable, Equatable, Sendable {
         case invalidTimeWindow
         case unsupportedInterval
         case missingWeekdays
+    }
+}
+
+struct HydrationReminder: Equatable, Sendable, Identifiable {
+    let scheduledAt: Date
+    var id: String { "\(HydrationNotificationIdentity.requestPrefix)\(scheduledAt.timeIntervalSince1970)" }
+}
+
+enum HydrationNotificationPermission: Equatable, Sendable {
+    case notDetermined, denied, authorized
+
+    var title: String {
+        switch self {
+        case .notDetermined: "Permission not requested"
+        case .denied: "Notifications are blocked"
+        case .authorized: "Notifications are allowed"
+        }
     }
 }
 

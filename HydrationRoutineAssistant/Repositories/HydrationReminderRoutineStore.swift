@@ -6,6 +6,15 @@ protocol HydrationReminderRoutineStore {
     func save(_ routine: HydrationReminderRoutine) throws
 }
 
+@MainActor
+protocol HydrationReminderScheduler {
+    func permission() async -> HydrationNotificationPermission
+    func requestPermission() async throws -> Bool
+    func replaceReminders(with reminders: [HydrationReminder], calendar: Calendar) async throws
+    func pendingReminders() async -> [HydrationReminder]
+    func sendPreview() async throws
+}
+
 enum HydrationRoutineStoreError: LocalizedError {
     case unreadablePreferences
     case saveFailed

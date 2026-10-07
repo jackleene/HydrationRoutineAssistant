@@ -41,6 +41,121 @@ struct FetchHydrationHistoryUseCase: Sendable {
     }
 }
 
+struct PlanHydrationRemindersUseCase: Sendable {
+    static let maximumPendingReminders = 60
+    let calendar: Calendar
+
+    func execute(_ routine: HydrationReminderRoutine, from date: Date, completedDay: Date? = nil) throws -> [HydrationReminder] {
+        guard routine.isEnabled else { return [] }
+        do { try routine.validate() }
+        catch HydrationReminderRoutine.ValidationError.invalidTimeWindow { throw Failure.invalidTimeWindow }
+        catch HydrationReminderRoutine.ValidationError.unsupportedInterval { throw Failure.unsupportedInterval }
+        catch { throw Failure.missingWeekdays }
+        var reminders: [HydrationReminder] = []
+        let today = calendar.startOfDay(for: date)
+        for offset in 0..<7 {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { throw Failure.invalidHydrationDay }
+            if let completedDay, calendar.isDate(day, inSameDayAs: completedDay) { continue }
+            guard routine.weekdays.contains(calendar.component(.weekday, from: day)) else { continue }
+            for minute in stride(from: routine.startMinute, to: routine.endMinute, by: routine.intervalMinutes) {
+                // Strict matching skips nonexistent local times during a daylight-saving change.
+                guard let time = calendar.date(bySettingHour: minute / 60, minute: minute % 60, second: 0, of: day,
+                                               matchingPolicy: .strict, repeatedTimePolicy: .first, direction: .forward),
+                      calendar.isDate(time, inSameDayAs: day), time > date else { continue }
+                reminders.append(HydrationReminder(scheduledAt: time))
+                if reminders.count == Self.maximumPendingReminders { return reminders }
+            }
+        }
+        return reminders
+    }
+
+    enum Failure: LocalizedError, Equatable {
+        case invalidTimeWindow, unsupportedInterval, missingWeekdays, invalidHydrationDay
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidTimeWindow: "Choose a reminder end time later than the start time on the same day."
+            case .unsupportedInterval: "Choose an interval from 15 to 180 minutes in 15-minute steps."
+            case .missingWeekdays: "Choose at least one day for your water breaks."
+            case .invalidHydrationDay: "The next reminder days could not be determined."
+            }
+        }
+        var recoverySuggestion: String? { "Review your routine times and days, then save again." }
+    }
+}
+
+@MainActor
+struct ScheduleHydrationRemindersUseCase {
+    let store: any HydrationReminderRoutineStore
+    let scheduler: any HydrationReminderScheduler
+    let calendar: Calendar
+
+    func execute(
+        _ routine: HydrationReminderRoutine, at date: Date, completedDay: Date? = nil,
+        requestPermission: Bool = true
+    ) async throws -> [HydrationReminder] {
+        let reminders = try PlanHydrationRemindersUseCase(calendar: calendar)
+            .execute(routine, from: date, completedDay: completedDay)
+        do { try SaveHydrationReminderRoutineUseCase(store: store).execute(routine) }
+        catch { throw Failure.unableToSaveRoutine }
+        if routine.isEnabled {
+            var permission = await scheduler.permission()
+            if permission == .notDetermined, requestPermission {
+                do { permission = try await scheduler.requestPermission() ? .authorized : .denied }
+                catch { throw Failure.unableToRequestPermission }
+            }
+            guard permission == .authorized else {
+                try? await scheduler.replaceReminders(with: [], calendar: calendar)
+                throw Failure.notificationsNotAllowed
+            }
+        }
+        do { try await scheduler.replaceReminders(with: reminders, calendar: calendar) }
+        catch { throw Failure.unableToScheduleReminders }
+        return reminders
+    }
+
+    enum Failure: LocalizedError, Equatable {
+        case unableToSaveRoutine, unableToRequestPermission, notificationsNotAllowed, unableToScheduleReminders
+
+        var errorDescription: String? {
+            switch self {
+            case .unableToSaveRoutine: "Your reminder preferences could not be saved."
+            case .unableToRequestPermission: "Your routine is saved, but notification permission could not be requested."
+            case .notificationsNotAllowed: "Your routine is saved, but notifications are not allowed."
+            case .unableToScheduleReminders: "Your routine is saved, but its water-break reminders could not be scheduled."
+            }
+        }
+        var recoverySuggestion: String? {
+            switch self {
+            case .notificationsNotAllowed: "Allow notifications in Settings, then return to the app to apply your routine."
+            default: "Try saving your routine again. You can turn off reminders if you no longer want them."
+            }
+        }
+    }
+}
+
+@MainActor
+struct SendHydrationReminderPreviewUseCase {
+    let scheduler: any HydrationReminderScheduler
+
+    func execute() async throws {
+        guard await scheduler.permission() == .authorized else { throw Failure.notificationsNotAllowed }
+        do { try await scheduler.sendPreview() }
+        catch { throw Failure.unableToSendPreview }
+    }
+
+    enum Failure: LocalizedError, Equatable {
+        case notificationsNotAllowed, unableToSendPreview
+        var errorDescription: String? {
+            switch self {
+            case .notificationsNotAllowed: "Allow notifications before sending a test water-break reminder."
+            case .unableToSendPreview: "The test water-break reminder could not be scheduled."
+            }
+        }
+        var recoverySuggestion: String? { "Save an enabled routine and check notification permission, then try again." }
+    }
+}
+
 @MainActor
 struct SaveHydrationReminderRoutineUseCase {
     let store: any HydrationReminderRoutineStore

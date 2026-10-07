@@ -35,3 +35,40 @@ For device builds, select your own development team in Xcode and configure the
 matching App Group for each target that shares this data. The app's entitlements
 file is already linked in both Debug and Release. Simulator verification does not
 validate device provisioning. See [Apple's App Group setup guide](https://developer.apple.com/documentation/xcode/configuring-app-groups).
+
+## Water-break reminders
+
+In **Routine**, choose reminder times, an interval and weekdays, enable the routine,
+then save. The app asks for notification permission only for this explicit action.
+If permission is denied, the preferences remain saved and the page offers a link
+to notification settings. Allow notifications there and return to the app to apply them.
+
+The app schedules the earliest 60 future reminders over 7 calendar days, excluding
+the end of the selected window and any times that have already passed. Open the app
+regularly to refill this bounded queue. It is not an indefinite background schedule.
+Dates follow the device's calendar and time zone; nonexistent daylight-saving times
+are skipped and a repeated wall-clock time is scheduled only once.
+
+Reaching today's goal cancels the rest of today's reminders while retaining future
+routine days. Saving a changed routine replaces its previous pending reminders;
+**Turn off reminders** cancels them without requesting notification permission.
+Other notification categories are not cancelled.
+
+After permission is granted, **Send test reminder** schedules a notification in
+5 seconds. It appears while the app is open as well as in the background. Tapping
+the reminder or its **Open today's water intake** action opens Today.
+The `HYDRATION_WATER_BREAK` category prepares integration with the custom
+Notification Content Extension, which is added in a separate update.
+
+On 7 October 2026, an iPhone 17 Pro Simulator running iOS 26.5 verified permission
+refusal and recovery after enabling notifications, foreground and background test
+delivery, tapping a notification to open Today, changed-interval replacement,
+goal-completion cancellation for today only, and stopping reminders across relaunch.
+The notification-settings link opened the Settings home page in that run; navigating
+through **Settings > Apps > HydrationRoutineAssistant > Notifications** enabled
+notifications. Direct settings navigation and delivery on a physical device remain
+unverified. The QA routine was left off after these checks.
+
+Automated tests use isolated mock schedulers and preference stores; they do not
+grant system permission. Implementation references:
+[Apple's local notification guide](https://developer.apple.com/documentation/usernotifications/scheduling-a-notification-locally-from-your-app).

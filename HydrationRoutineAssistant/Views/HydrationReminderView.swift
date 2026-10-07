@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct HydrationReminderView: View {
     @Environment(HydrationWorkspaceViewModel.self) private var model
@@ -9,9 +10,22 @@ struct HydrationReminderView: View {
         Form {
             Section {
                 Toggle("Use this reminder routine", isOn: $model.routineEnabled)
-                Text("Plan your water breaks. Notifications are not scheduled yet.")
+                Text("Save an enabled routine to allow notifications and schedule your water breaks.")
                     .font(.callout).foregroundStyle(HydrationTheme.supportingText)
             } header: { Text("Your routine").foregroundStyle(HydrationTheme.supportingText) }
+            Section {
+                Text(model.notificationPermission.title)
+                Text("\(model.scheduledReminderCount) upcoming water-break reminders")
+                    .foregroundStyle(HydrationTheme.supportingText)
+                if let next = model.nextReminderDate {
+                    Text("Next: \(next.formatted(date: .abbreviated, time: .shortened))")
+                        .font(.callout)
+                }
+                if model.notificationPermission == .denied,
+                   let settings = URL(string: UIApplication.openNotificationSettingsURLString) {
+                    Link("Open notification settings", destination: settings).frame(minHeight: 44)
+                }
+            } header: { Text("Notification status").foregroundStyle(HydrationTheme.supportingText) }
             Section {
                 DatePicker("Start time", selection: $model.routineStart, displayedComponents: .hourAndMinute)
                 DatePicker("End time", selection: $model.routineEnd, displayedComponents: .hourAndMinute)
@@ -37,19 +51,28 @@ struct HydrationReminderView: View {
             if let issue = model.routineIssue { Section { HydrationIssueView(issue: issue) } }
             if let message = model.routineConfirmation { Section { HydrationConfirmationView(message: message) } }
             Section {
-                Button(action: model.saveRoutine) {
+                Button { Task { await model.saveRoutine() } } label: {
                     Text("Save reminder routine").frame(maxWidth: .infinity, minHeight: 36)
                 }
                 .buttonStyle(.borderedProminent).tint(HydrationTheme.buttonTint)
                 .foregroundStyle(.white)
                 .accessibilityIdentifier("saveReminderRoutineButton")
+                if model.isSavingRoutine || model.isRefreshingReminders { ProgressView("Updating water-break reminders…") }
+                Button("Send test reminder") { Task { await model.sendReminderPreview() } }
+                    .frame(minHeight: 44)
+                    .disabled(model.notificationPermission != .authorized)
+                    .accessibilityIdentifier("sendReminderPreviewButton")
+                Button("Turn off reminders") { Task { await model.stopReminders() } }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("stopRemindersButton")
             } footer: {
-                Text("Preferences are saved on this device. Notifications are not scheduled yet.")
+                Text("Changes apply when you save. Up to 60 reminders are scheduled over the next 7 calendar days. Open the app regularly to keep the queue filled. Reaching today's goal pauses the rest of today's reminders.")
                     .foregroundStyle(HydrationTheme.supportingText)
             }
         }
         .navigationTitle("Routine")
-        .onChange(of: model.routineEnabled) { model.clearRoutineFeedback() }
+        .disabled(model.isSaving || model.isSavingRoutine || model.isRefreshingReminders)
+        .task { await model.refreshReminderSchedule() }
         .onChange(of: model.routineStart) { model.clearRoutineFeedback() }
         .onChange(of: model.routineEnd) { model.clearRoutineFeedback() }
         .onChange(of: model.routineInterval) { model.clearRoutineFeedback() }

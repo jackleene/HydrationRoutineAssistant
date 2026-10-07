@@ -306,7 +306,7 @@ struct HydrationWorkspaceViewModelTests {
     }
 
     @Test("Reminder preferences load into the form and save edited values")
-    func routineLoadsAndSaves() throws {
+    func routineLoadsAndSaves() async throws {
         let store = WorkspaceRoutineStore()
         store.saved = HydrationReminderRoutine(
             isEnabled: true, startMinute: 480, endMinute: 1_080, intervalMinutes: 90, weekdays: [2, 4]
@@ -320,7 +320,7 @@ struct HydrationWorkspaceViewModelTests {
         model.toggleWeekday(.friday)
         model.routineInterval = 75
 
-        model.saveRoutine()
+        await model.saveRoutine()
 
         let routine = try #require(store.saved)
         #expect(routine.isEnabled)
@@ -334,13 +334,13 @@ struct HydrationWorkspaceViewModelTests {
     }
 
     @Test("Invalid reminder preferences do not overwrite the saved routine")
-    func invalidRoutineRetainsSavedPreferences() {
+    func invalidRoutineRetainsSavedPreferences() async {
         let store = WorkspaceRoutineStore()
         store.saved = .initial
         let model = workspace(store: store)
         model.routineWeekdays = []
 
-        model.saveRoutine()
+        await model.saveRoutine()
 
         #expect(store.saved == .initial)
         #expect(store.saveCount == 0)
@@ -351,7 +351,7 @@ struct HydrationWorkspaceViewModelTests {
     }
 
     @Test("Preference storage failures show feedback instead of success")
-    func routineStorageFailuresShowFeedback() {
+    func routineStorageFailuresShowFeedback() async {
         let store = WorkspaceRoutineStore()
         store.loadFailure = .unreadablePreferences
         let model = workspace(store: store)
@@ -360,7 +360,7 @@ struct HydrationWorkspaceViewModelTests {
         #expect(model.routineInterval == 60)
         store.saveFailure = .saveFailed
 
-        model.saveRoutine()
+        await model.saveRoutine()
 
         #expect(model.routineIssue == HydrationIssue(SaveHydrationReminderRoutineUseCase.Failure.unableToSaveRoutine))
         #expect(model.routineConfirmation == nil)

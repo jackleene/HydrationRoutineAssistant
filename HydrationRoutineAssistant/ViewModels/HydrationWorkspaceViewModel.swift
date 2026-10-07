@@ -69,18 +69,24 @@ final class HydrationWorkspaceViewModel {
     private(set) var intakeNeedsGoal = false
     private(set) var isSaving = false
 
-    var routineEnabled = false
+    var routineEnabled = false { didSet { clearRoutineFeedback() } }
     var routineStart = Date()
     var routineEnd = Date()
     var routineInterval = 60
     var routineWeekdays: Set<Int> = [2, 3, 4, 5, 6]
     var routineIssue: HydrationIssue?
     var routineConfirmation: String?
+    private(set) var notificationPermission: HydrationNotificationPermission = .notDetermined
+    private(set) var scheduledReminderCount = 0
+    private(set) var nextReminderDate: Date?
+    private(set) var isSavingRoutine = false
+    private(set) var isRefreshingReminders = false
 
     let calendar: Calendar
     private let repository: any HydrationRepository
     private let routineStore: any HydrationReminderRoutineStore
     private let widgetPublisher: PublishHydrationWidgetSnapshotUseCase?
+    private let reminderScheduler: (any HydrationReminderScheduler)?
     private var todayRequest = UUID()
     private var historyRequest = UUID()
     private var goalRequest = UUID()
@@ -88,18 +94,22 @@ final class HydrationWorkspaceViewModel {
     init(
         repository: any HydrationRepository, routineStore: any HydrationReminderRoutineStore,
         calendar: Calendar = .current,
-        widgetPublisher: PublishHydrationWidgetSnapshotUseCase? = nil
+        widgetPublisher: PublishHydrationWidgetSnapshotUseCase? = nil,
+        reminderScheduler: (any HydrationReminderScheduler)? = nil
     ) {
         self.repository = repository
         self.routineStore = routineStore
         self.calendar = calendar
         self.widgetPublisher = widgetPublisher
+        self.reminderScheduler = reminderScheduler
         let routine: HydrationReminderRoutine
+        let loadIssue: HydrationIssue?
         do {
             routine = try routineStore.load() ?? .initial
+            loadIssue = nil
         } catch {
             routine = .initial
-            routineIssue = HydrationIssue(error)
+            loadIssue = HydrationIssue(error)
         }
         routineEnabled = routine.isEnabled
         routineStart = calendar.date(bySettingHour: routine.startMinute / 60, minute: routine.startMinute % 60,
@@ -108,6 +118,8 @@ final class HydrationWorkspaceViewModel {
                                    second: 0, of: Date()) ?? Date()
         routineInterval = routine.intervalMinutes
         routineWeekdays = routine.weekdays
+        // Restoring observable fields can clear feedback, so apply the load error last.
+        routineIssue = loadIssue
     }
 
     func refreshToday() async {
@@ -227,6 +239,7 @@ final class HydrationWorkspaceViewModel {
             goalConfirmation = "Daily goal saved."
             await refreshToday()
             if calendar.isDate(historyDate, inSameDayAs: date) { await loadHistory() }
+            await refreshReminderSchedule()
             return true
         } catch {
             goalIssue = HydrationIssue(error)
@@ -260,6 +273,7 @@ final class HydrationWorkspaceViewModel {
             todayConfirmation = "\(entry.amountMillilitres) mL recorded."
             await refreshToday()
             if calendar.isDate(historyDate, inSameDayAs: date) { await loadHistory() }
+            await refreshReminderSchedule()
             return true
         } catch {
             if fromForm {
@@ -279,7 +293,10 @@ final class HydrationWorkspaceViewModel {
         routineConfirmation = nil
     }
 
-    func saveRoutine() {
+    func saveRoutine() async {
+        guard !isSaving, !isSavingRoutine, !isRefreshingReminders else { return }
+        isSavingRoutine = true
+        defer { isSavingRoutine = false }
         routineIssue = nil
         routineConfirmation = nil
         let start = calendar.dateComponents([.hour, .minute], from: routineStart)
@@ -290,11 +307,88 @@ final class HydrationWorkspaceViewModel {
             weekdays: routineWeekdays
         )
         do {
-            try SaveHydrationReminderRoutineUseCase(store: routineStore).execute(routine)
-            routineConfirmation = "Reminder routine saved."
+            if reminderScheduler != nil {
+                try await applyReminderRoutine(routine, requestPermission: true)
+                routineConfirmation = routine.isEnabled ? "Reminder routine saved and scheduled." : "Water-break reminders turned off."
+                await updateReminderStatus()
+            } else {
+                try SaveHydrationReminderRoutineUseCase(store: routineStore).execute(routine)
+                routineConfirmation = "Reminder routine saved."
+            }
         } catch {
             routineIssue = HydrationIssue(error)
+            await updateReminderStatus()
         }
+    }
+
+    private var completedHydrationDay: Date? {
+        todayProgress?.isGoalReached == true ? todayProgress?.goal.date : nil
+    }
+
+    private func applyReminderRoutine(_ routine: HydrationReminderRoutine, requestPermission: Bool) async throws {
+        guard let reminderScheduler else { return }
+        while true {
+            let completedDay = completedHydrationDay
+            _ = try await ScheduleHydrationRemindersUseCase(store: routineStore, scheduler: reminderScheduler, calendar: calendar)
+                .execute(routine, at: Date(), completedDay: completedDay, requestPermission: requestPermission)
+            // Intake or goal writes can finish while the system installs notification requests.
+            if completedDay == completedHydrationDay { return }
+        }
+    }
+
+    private func updateReminderStatus() async {
+        guard let reminderScheduler else { return }
+        notificationPermission = await reminderScheduler.permission()
+        let pending = await reminderScheduler.pendingReminders()
+        scheduledReminderCount = pending.count
+        nextReminderDate = pending.first?.scheduledAt
+    }
+
+    func refreshReminderSchedule() async {
+        guard reminderScheduler != nil, !isSavingRoutine, !isRefreshingReminders else { return }
+        isRefreshingReminders = true
+        defer { isRefreshingReminders = false }
+        await updateReminderStatus()
+        do {
+            let saved = try routineStore.load() ?? .initial
+            guard notificationPermission != .notDetermined || !saved.isEnabled else { return }
+            try await applyReminderRoutine(saved, requestPermission: false)
+            if routineIssue == HydrationIssue(ScheduleHydrationRemindersUseCase.Failure.notificationsNotAllowed) ||
+               routineIssue == HydrationIssue(ScheduleHydrationRemindersUseCase.Failure.unableToScheduleReminders) {
+                routineIssue = nil
+            }
+            await updateReminderStatus()
+        } catch {
+            routineIssue = HydrationIssue(error)
+            await updateReminderStatus()
+        }
+    }
+
+    func stopReminders() async {
+        guard let reminderScheduler, !isSavingRoutine, !isRefreshingReminders else { return }
+        isSavingRoutine = true
+        defer { isSavingRoutine = false }
+        clearRoutineFeedback()
+        do {
+            let disabled = ((try? routineStore.load()) ?? .initial).disablingReminders()
+            _ = try await ScheduleHydrationRemindersUseCase(store: routineStore, scheduler: reminderScheduler, calendar: calendar)
+                .execute(disabled, at: Date(), requestPermission: false)
+            routineEnabled = false
+            await updateReminderStatus()
+            routineConfirmation = "Water-break reminders turned off."
+        } catch { routineIssue = HydrationIssue(error) }
+        await updateReminderStatus()
+    }
+
+    func sendReminderPreview() async {
+        guard let reminderScheduler, !isSavingRoutine, !isRefreshingReminders else { return }
+        isSavingRoutine = true
+        defer { isSavingRoutine = false }
+        clearRoutineFeedback()
+        do {
+            try await SendHydrationReminderPreviewUseCase(scheduler: reminderScheduler).execute()
+            routineConfirmation = "Test water-break reminder scheduled for 5 seconds from now."
+        } catch { routineIssue = HydrationIssue(error) }
     }
 
     enum InputFailure: LocalizedError {

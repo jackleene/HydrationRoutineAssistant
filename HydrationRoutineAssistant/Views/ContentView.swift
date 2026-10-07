@@ -74,9 +74,11 @@ struct HydrationWorkspaceView: View {
                 Task {
                     await model.refreshToday()
                     await model.loadHistory()
+                    await model.refreshReminderSchedule()
                 }
             }
         }
+        .task { await model.refreshReminderSchedule() }
     }
 }
 
