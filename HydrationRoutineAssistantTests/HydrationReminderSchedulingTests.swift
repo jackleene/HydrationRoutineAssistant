@@ -60,13 +60,52 @@ struct PlanHydrationRemindersTests {
             .execute(ReminderFixtures.enabled.disablingReminders(), from: ReminderFixtures.now).isEmpty)
     }
 
-    @Test("Invalid routine rules use domain errors before building a queue", arguments: [
-        (end: 540, interval: 60, days: Set([2]), failure: PlanHydrationRemindersUseCase.Failure.invalidTimeWindow),
-        (end: 1_020, interval: 14, days: Set([2]), failure: .unsupportedInterval),
-        (end: 1_020, interval: 60, days: Set<Int>(), failure: .missingWeekdays)
+    @Test("The shortest and longest supported intervals produce valid water breaks", arguments: [
+        (interval: 15, count: 14), (interval: 180, count: 7)
     ])
-    func invalidRoutineHasNoPlan(_ input: (end: Int, interval: Int, days: Set<Int>, failure: PlanHydrationRemindersUseCase.Failure)) {
-        let routine = HydrationReminderRoutine(isEnabled: true, startMinute: 540, endMinute: input.end,
+    func supportedIntervalBoundaries(_ input: (interval: Int, count: Int)) throws {
+        let routine = HydrationReminderRoutine(
+            isEnabled: true, startMinute: 780, endMinute: 810,
+            intervalMinutes: input.interval, weekdays: Set(1...7)
+        )
+        let reminders = try PlanHydrationRemindersUseCase(calendar: ReminderFixtures.calendar)
+            .execute(routine, from: ReminderFixtures.now)
+
+        #expect(reminders.count == input.count)
+        #expect(reminders.first?.scheduledAt == ReminderFixtures.now.addingTimeInterval(3_600))
+    }
+
+    @Test("The seven-day plan excludes passed times and the eighth calendar day")
+    func planningWindowEndsAfterSixFutureDays() throws {
+        let calendar = ReminderFixtures.calendar
+        let routine = HydrationReminderRoutine(
+            isEnabled: true, startMinute: 0, endMinute: 1,
+            intervalMinutes: 180, weekdays: Set(1...7)
+        )
+        let reminders = try PlanHydrationRemindersUseCase(calendar: calendar)
+            .execute(routine, from: ReminderFixtures.now)
+        let midnight = calendar.startOfDay(for: ReminderFixtures.now)
+
+        #expect(reminders.count == 6)
+        #expect(reminders.first?.scheduledAt == midnight.addingTimeInterval(86_400))
+        #expect(reminders.last?.scheduledAt == midnight.addingTimeInterval(6 * 86_400))
+    }
+
+    @Test("Invalid routine rules use domain errors before building a queue", arguments: [
+        (start: 540, end: 540, interval: 60, days: Set([2]), failure: PlanHydrationRemindersUseCase.Failure.invalidTimeWindow),
+        (start: -1, end: 1_020, interval: 60, days: Set([2]), failure: .invalidTimeWindow),
+        (start: 540, end: 1_440, interval: 60, days: Set([2]), failure: .invalidTimeWindow),
+        (start: 540, end: 1_020, interval: 14, days: Set([2]), failure: .unsupportedInterval),
+        (start: 540, end: 1_020, interval: 16, days: Set([2]), failure: .unsupportedInterval),
+        (start: 540, end: 1_020, interval: 181, days: Set([2]), failure: .unsupportedInterval),
+        (start: 540, end: 1_020, interval: 60, days: Set<Int>(), failure: .missingWeekdays),
+        (start: 540, end: 1_020, interval: 60, days: Set([0]), failure: .missingWeekdays),
+        (start: 540, end: 1_020, interval: 60, days: Set([8]), failure: .missingWeekdays)
+    ])
+    func invalidRoutineHasNoPlan(
+        _ input: (start: Int, end: Int, interval: Int, days: Set<Int>, failure: PlanHydrationRemindersUseCase.Failure)
+    ) {
+        let routine = HydrationReminderRoutine(isEnabled: true, startMinute: input.start, endMinute: input.end,
                                                intervalMinutes: input.interval, weekdays: input.days)
         #expect(throws: input.failure) {
             try PlanHydrationRemindersUseCase(calendar: ReminderFixtures.calendar).execute(routine, from: ReminderFixtures.now)
@@ -91,6 +130,52 @@ struct PlanHydrationRemindersTests {
 
 @MainActor
 struct ScheduleHydrationRemindersTests {
+    @Test("Invalid edits leave the saved routine and pending reminders unchanged")
+    func invalidEditDoesNotAffectExistingRoutine() async {
+        let store = ReminderPreferenceMock()
+        store.saved = ReminderFixtures.enabled
+        let scheduler = ReminderSchedulerMock(permission: .notDetermined)
+        let previous = [HydrationReminder(scheduledAt: ReminderFixtures.now.addingTimeInterval(60))]
+        scheduler.pending = previous
+        let invalid = HydrationReminderRoutine(
+            isEnabled: true, startMinute: 540, endMinute: 1_020, intervalMinutes: 60, weekdays: []
+        )
+
+        await #expect(throws: PlanHydrationRemindersUseCase.Failure.missingWeekdays) {
+            try await ScheduleHydrationRemindersUseCase(
+                store: store, scheduler: scheduler, calendar: ReminderFixtures.calendar
+            ).execute(invalid, at: ReminderFixtures.now)
+        }
+
+        #expect(store.saved == ReminderFixtures.enabled)
+        #expect(scheduler.pending == previous)
+        #expect(scheduler.permissionChecks == 0)
+        #expect(scheduler.permissionRequests == 0)
+        #expect(scheduler.replacements == 0)
+    }
+
+    @Test("A failed preference save preserves the previous queue without requesting permission")
+    func failedSavePreservesExistingRoutine() async {
+        let store = ReminderPreferenceMock(failsSave: true)
+        let previousRoutine = ReminderFixtures.enabled.disablingReminders()
+        store.saved = previousRoutine
+        let scheduler = ReminderSchedulerMock(permission: .notDetermined)
+        let previous = [HydrationReminder(scheduledAt: ReminderFixtures.now.addingTimeInterval(60))]
+        scheduler.pending = previous
+
+        await #expect(throws: ScheduleHydrationRemindersUseCase.Failure.unableToSaveRoutine) {
+            try await ScheduleHydrationRemindersUseCase(
+                store: store, scheduler: scheduler, calendar: ReminderFixtures.calendar
+            ).execute(ReminderFixtures.enabled, at: ReminderFixtures.now)
+        }
+
+        #expect(store.saved == previousRoutine)
+        #expect(scheduler.pending == previous)
+        #expect(scheduler.permissionChecks == 0)
+        #expect(scheduler.permissionRequests == 0)
+        #expect(scheduler.replacements == 0)
+    }
+
     @Test("Saving an enabled routine requests permission once and replaces the reminder queue")
     func permissionGrantedSchedulesRoutine() async throws {
         let store = ReminderPreferenceMock()
@@ -118,6 +203,26 @@ struct ScheduleHydrationRemindersTests {
         #expect(store.saved == ReminderFixtures.enabled)
         #expect(scheduler.pending.isEmpty)
         #expect(scheduler.permissionRequests == 0)
+    }
+
+    @Test("Declining the first permission request saves preferences but clears water breaks")
+    func firstPermissionRequestIsDeclined() async {
+        let store = ReminderPreferenceMock()
+        let scheduler = ReminderSchedulerMock(permission: .notDetermined)
+        scheduler.grantsPermission = false
+        scheduler.pending = [HydrationReminder(scheduledAt: ReminderFixtures.now.addingTimeInterval(60))]
+
+        await #expect(throws: ScheduleHydrationRemindersUseCase.Failure.notificationsNotAllowed) {
+            try await ScheduleHydrationRemindersUseCase(
+                store: store, scheduler: scheduler, calendar: ReminderFixtures.calendar
+            ).execute(ReminderFixtures.enabled, at: ReminderFixtures.now)
+        }
+
+        #expect(store.saved == ReminderFixtures.enabled)
+        #expect(scheduler.permissionRequests == 1)
+        #expect(scheduler.currentPermission == .denied)
+        #expect(scheduler.pending.isEmpty)
+        #expect(scheduler.replacements == 1)
     }
 
     @Test("Refreshing a saved routine never opens the notification permission prompt")
@@ -176,13 +281,33 @@ struct ScheduleHydrationRemindersTests {
         #expect(scheduler.permissionRequests == 0)
     }
 
-    @Test("A test reminder cannot bypass denied notification permission")
-    func previewRespectsDeniedPermission() async {
-        let scheduler = ReminderSchedulerMock(permission: .denied)
+    @Test("A test reminder cannot bypass missing notification permission", arguments: [
+        HydrationNotificationPermission.denied, .notDetermined
+    ])
+    func previewRespectsDeniedPermission(permission: HydrationNotificationPermission) async {
+        let scheduler = ReminderSchedulerMock(permission: permission)
         await #expect(throws: SendHydrationReminderPreviewUseCase.Failure.notificationsNotAllowed) {
             try await SendHydrationReminderPreviewUseCase(scheduler: scheduler).execute()
         }
         #expect(scheduler.previews == 0)
+        #expect(scheduler.permissionRequests == 0)
+    }
+
+    @Test("A preview scheduling failure does not change the saved reminder queue")
+    func failedPreviewPreservesRoutineQueue() async {
+        let scheduler = ReminderSchedulerMock(permission: .authorized)
+        scheduler.failsPreview = true
+        let previous = [HydrationReminder(scheduledAt: ReminderFixtures.now.addingTimeInterval(60))]
+        scheduler.pending = previous
+
+        await #expect(throws: SendHydrationReminderPreviewUseCase.Failure.unableToSendPreview) {
+            try await SendHydrationReminderPreviewUseCase(scheduler: scheduler).execute()
+        }
+
+        #expect(scheduler.pending == previous)
+        #expect(scheduler.previews == 0)
+        #expect(scheduler.permissionRequests == 0)
+        #expect(scheduler.replacements == 0)
     }
 
     @Test("Turn off uses saved preferences even when the edited form has no selected days")
@@ -276,20 +401,26 @@ private final class ReminderSchedulerMock: HydrationReminderScheduler {
     var pending: [HydrationReminder] = []
     var failsPermission = false
     var failsReplacement = false
+    var failsPreview = false
+    var grantsPermission = true
     var pauseFirstReplacement = false
     private var pausedReplacement: CheckedContinuation<Void, Never>?
     private var pauseObserver: CheckedContinuation<Void, Never>?
     private(set) var permissionRequests = 0
+    private(set) var permissionChecks = 0
     private(set) var replacements = 0
     private(set) var previews = 0
 
     init(permission: HydrationNotificationPermission) { currentPermission = permission }
-    func permission() async -> HydrationNotificationPermission { currentPermission }
+    func permission() async -> HydrationNotificationPermission {
+        permissionChecks += 1
+        return currentPermission
+    }
     func requestPermission() async throws -> Bool {
         permissionRequests += 1
         if failsPermission { throw HydrationRoutineStoreError.saveFailed }
-        currentPermission = .authorized
-        return true
+        currentPermission = grantsPermission ? .authorized : .denied
+        return grantsPermission
     }
     func replaceReminders(with reminders: [HydrationReminder], calendar: Calendar) async throws {
         if pauseFirstReplacement, replacements == 0 {
@@ -304,7 +435,10 @@ private final class ReminderSchedulerMock: HydrationReminderScheduler {
         replacements += 1
     }
     func pendingReminders() async -> [HydrationReminder] { pending }
-    func sendPreview() async throws { previews += 1 }
+    func sendPreview() async throws {
+        if failsPreview { throw HydrationRoutineStoreError.saveFailed }
+        previews += 1
+    }
     func waitUntilPaused() async {
         if pausedReplacement != nil { return }
         await withCheckedContinuation { pauseObserver = $0 }

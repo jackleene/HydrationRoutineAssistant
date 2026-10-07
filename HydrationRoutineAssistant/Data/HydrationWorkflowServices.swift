@@ -139,12 +139,36 @@ final class UserNotificationHydrationReminderScheduler: NSObject, HydrationRemin
     }
 
     nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
-    ) async {
-        guard response.notification.request.identifier.hasPrefix(HydrationNotificationIdentity.requestPrefix),
-              response.actionIdentifier == UNNotificationDefaultActionIdentifier ||
-              response.actionIdentifier == HydrationNotificationIdentity.openTodayAction else { return }
-        await MainActor.run { self.onOpenToday?() }
+        _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping @Sendable () -> Void
+    ) {
+        let requestIdentifier = response.notification.request.identifier
+        let actionIdentifier = response.actionIdentifier
+        // UIKit can restore its scene when this callback completes, so finish on the main thread.
+        Task { @MainActor in
+            HydrationNotificationResponseHandler.handle(
+                requestIdentifier: requestIdentifier,
+                actionIdentifier: actionIdentifier,
+                onOpenToday: { [weak self] in self?.onOpenToday?() },
+                completionHandler: completionHandler
+            )
+        }
+    }
+}
+
+@MainActor
+enum HydrationNotificationResponseHandler {
+    static func handle(
+        requestIdentifier: String,
+        actionIdentifier: String,
+        onOpenToday: @MainActor @Sendable () -> Void,
+        completionHandler: @Sendable () -> Void
+    ) {
+        let opensToday = requestIdentifier.hasPrefix(HydrationNotificationIdentity.requestPrefix) &&
+            (actionIdentifier == UNNotificationDefaultActionIdentifier ||
+             actionIdentifier == HydrationNotificationIdentity.openTodayAction)
+        if opensToday { onOpenToday() }
+        completionHandler()
     }
 }
 
