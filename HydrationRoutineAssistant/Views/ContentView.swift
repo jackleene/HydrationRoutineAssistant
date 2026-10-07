@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     let launcher: HydrationLaunchViewModel
+    @State private var pendingTodayLink = false
 
     var body: some View {
         Group {
@@ -25,6 +26,20 @@ struct ContentView: View {
             }
         }
         .task { await launcher.open() }
+        .onOpenURL { url in
+            guard HydrationWidgetIdentity.opensToday(url) else { return }
+            pendingTodayLink = true
+            openTodayFromWidget()
+        }
+        .onChange(of: launcher.workspace != nil) { openTodayFromWidget() }
+    }
+
+    private func openTodayFromWidget() {
+        guard pendingTodayLink, let workspace = launcher.workspace else { return }
+        pendingTodayLink = false
+        workspace.selectedTab = .today
+        workspace.sheet = nil
+        Task { await workspace.refreshToday() }
     }
 }
 

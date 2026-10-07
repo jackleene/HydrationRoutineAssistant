@@ -32,13 +32,14 @@ final class UserDefaultsHydrationReminderRoutineStore: HydrationReminderRoutineS
 enum HydrationComposition {
     @MainActor
     static func makeWorkspace() async throws -> HydrationWorkspaceViewModel {
-        let calendar = Calendar.current
+        let calendar = Calendar.autoupdatingCurrent
         let container = try await HydrationPersistence.makeContainer()
         let repository = CoreDataHydrationRepository(container: container, calendar: calendar)
         return HydrationWorkspaceViewModel(
             repository: repository, routineStore: UserDefaultsHydrationReminderRoutineStore(), calendar: calendar,
             widgetPublisher: PublishHydrationWidgetSnapshotUseCase(
-                store: AppGroupHydrationWidgetSnapshotStore(), calendar: calendar
+                store: WidgetReloadingHydrationSnapshotStore(store: AppGroupHydrationWidgetSnapshotStore()),
+                calendar: calendar
             )
         )
     }

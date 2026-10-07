@@ -30,6 +30,10 @@
 		41163C2A3075D8C40056845C /* HydrationReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C233075D8C40056845C /* HydrationReminderView.swift */; };
 		41163C2B3075D8C40056845C /* HydrationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C213075D8C40056845C /* HydrationHistoryView.swift */; };
 		41163C363075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C353075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift */; };
+		41163C403075F2A00056845C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41163C3F3075F2A00056845C /* WidgetKit.framework */; };
+		41163C423075F2A00056845C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41163C413075F2A00056845C /* SwiftUI.framework */; };
+		41163C4D3075F2A10056845C /* HydrationWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 41163C3D3075F2A00056845C /* HydrationWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		41163C5A3075F3950056845C /* WidgetReloadingHydrationSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41163C593075F3950056845C /* WidgetReloadingHydrationSnapshotStore.swift */; };
 		A00000000000000000000001 /* HydrationRoutineAssistantApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -42,7 +46,28 @@
 			remoteGlobalIDString = E00000000000000000000001;
 			remoteInfo = HydrationRoutineAssistant;
 		};
+		41163C4B3075F2A10056845C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = H00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41163C3C3075F2A00056845C;
+			remoteInfo = HydrationWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		41163C523075F2A10056845C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				41163C4D3075F2A10056845C /* HydrationWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		41163BDA307550C20056845C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -69,14 +94,29 @@
 		41163C243075D8C40056845C /* HydrationTodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationTodayView.swift; sourceTree = "<group>"; };
 		41163C253075D8C40056845C /* HydrationUIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationUIComponents.swift; sourceTree = "<group>"; };
 		41163C353075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishHydrationWidgetSnapshotUseCase.swift; sourceTree = "<group>"; };
+		41163C3D3075F2A00056845C /* HydrationWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HydrationWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		41163C3F3075F2A00056845C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		41163C413075F2A00056845C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		41163C593075F3950056845C /* WidgetReloadingHydrationSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetReloadingHydrationSnapshotStore.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* HydrationRoutineAssistantApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydrationRoutineAssistantApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* HydrationRoutineAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HydrationRoutineAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		41163C4E3075F2A10056845C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 41163C3C3075F2A00056845C /* HydrationWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		41163BE1307550DC0056845C /* HydrationRoutineAssistantTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = HydrationRoutineAssistantTests; sourceTree = "<group>"; };
 		41163C323075ECDD0056845C /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
+		41163C433075F2A00056845C /* HydrationWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (41163C4E3075F2A10056845C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HydrationWidget; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +124,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		41163C3A3075F2A00056845C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				41163C423075F2A00056845C /* SwiftUI.framework in Frameworks */,
+				41163C403075F2A00056845C /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,11 +146,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		41163C3E3075F2A00056845C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				41163C3F3075F2A00056845C /* WidgetKit.framework */,
+				41163C413075F2A00056845C /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		D00000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
 				D00000000000000000000002 /* HydrationRoutineAssistant */,
 				41163BE1307550DC0056845C /* HydrationRoutineAssistantTests */,
+				41163C433075F2A00056845C /* HydrationWidget */,
+				41163C3E3075F2A00056845C /* Frameworks */,
 				D00000000000000000000010 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -158,6 +218,7 @@
 		D00000000000000000000006 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				41163C593075F3950056845C /* WidgetReloadingHydrationSnapshotStore.swift */,
 				41163C1C3075D8990056845C /* HydrationWorkflowServices.swift */,
 				41163BFE3075692C0056845C /* CoreDataHydrationRepository.swift */,
 				41163C00307569390056845C /* HydrationPersistence.swift */,
@@ -200,6 +261,7 @@
 			children = (
 				B00000000000000000000003 /* HydrationRoutineAssistant.app */,
 				41163BE0307550DC0056845C /* HydrationRoutineAssistantTests.xctest */,
+				41163C3D3075F2A00056845C /* HydrationWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -230,6 +292,29 @@
 			productReference = 41163BE0307550DC0056845C /* HydrationRoutineAssistantTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		41163C3C3075F2A00056845C /* HydrationWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 41163C4F3075F2A10056845C /* Build configuration list for PBXNativeTarget "HydrationWidgetExtension" */;
+			buildPhases = (
+				41163C393075F2A00056845C /* Sources */,
+				41163C3A3075F2A00056845C /* Frameworks */,
+				41163C3B3075F2A00056845C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				41163C323075ECDD0056845C /* Shared */,
+				41163C433075F2A00056845C /* HydrationWidget */,
+			);
+			name = HydrationWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = HydrationWidgetExtension;
+			productReference = 41163C3D3075F2A00056845C /* HydrationWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		E00000000000000000000001 /* HydrationRoutineAssistant */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F00000000000000000000002 /* Build configuration list for PBXNativeTarget "HydrationRoutineAssistant" */;
@@ -237,10 +322,12 @@
 				G00000000000000000000001 /* Sources */,
 				C00000000000000000000001 /* Frameworks */,
 				G00000000000000000000002 /* Resources */,
+				41163C523075F2A10056845C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				41163C4C3075F2A10056845C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				41163C323075ECDD0056845C /* Shared */,
@@ -264,6 +351,9 @@
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = E00000000000000000000001;
 					};
+					41163C3C3075F2A00056845C = {
+						CreatedOnToolsVersion = 26.6;
+					};
 					E00000000000000000000001 = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -284,12 +374,20 @@
 			targets = (
 				E00000000000000000000001 /* HydrationRoutineAssistant */,
 				41163BDF307550DC0056845C /* HydrationRoutineAssistantTests */,
+				41163C3C3075F2A00056845C /* HydrationWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		41163BDE307550DC0056845C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		41163C3B3075F2A00056845C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -308,6 +406,13 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		41163BDC307550DC0056845C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		41163C393075F2A00056845C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -341,6 +446,7 @@
 				41163C363075ECEA0056845C /* PublishHydrationWidgetSnapshotUseCase.swift in Sources */,
 				41163BEF307553650056845C /* WaterIntakeEntry.swift in Sources */,
 				41163BF9307563A90056845C /* HydrationModel.xcdatamodeld in Sources */,
+				41163C5A3075F3950056845C /* WidgetReloadingHydrationSnapshotStore.swift in Sources */,
 				41163BF0307553650056845C /* HydrationProgress.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -352,6 +458,11 @@
 			isa = PBXTargetDependency;
 			target = E00000000000000000000001 /* HydrationRoutineAssistant */;
 			targetProxy = 41163BE4307550DC0056845C /* PBXContainerItemProxy */;
+		};
+		41163C4C3075F2A10056845C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41163C3C3075F2A00056845C /* HydrationWidgetExtension */;
+			targetProxy = 41163C4B3075F2A10056845C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -421,6 +532,96 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HydrationRoutineAssistant.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HydrationRoutineAssistant";
+			};
+			name = Release;
+		};
+		41163C503075F2A10056845C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = HydrationWidget/HydrationWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HydrationWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HydrationWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mingchen.HydrationRoutineAssistant.HydrationWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		41163C513075F2A10056845C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = HydrationWidget/HydrationWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HydrationWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HydrationWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mingchen.HydrationRoutineAssistant.HydrationWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -526,6 +727,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HydrationRoutineAssistant/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -552,6 +754,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HydrationRoutineAssistant/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -577,6 +780,15 @@
 			buildConfigurations = (
 				41163BE7307550DC0056845C /* Debug */,
 				41163BE8307550DC0056845C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		41163C4F3075F2A10056845C /* Build configuration list for PBXNativeTarget "HydrationWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				41163C503075F2A10056845C /* Debug */,
+				41163C513075F2A10056845C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
