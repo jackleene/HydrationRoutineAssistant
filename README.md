@@ -43,9 +43,12 @@ reviewing history and managing water-break reminders.
 
 Simulator checks on 7 October 2026 covered widget updates/navigation, reminder
 permissions/replacement/cancellation, and custom notification display/action forwarding.
+Manual checks also covered rejected water/goal inputs and history without a saved goal.
 Unit tests cover reminder boundaries, permission and failure handling, and notification states.
-Physical-device signing and delivery, plus custom notifications in dark mode and
-larger text, remain unverified.
+Workflow integration tests use isolated SQLite, preferences and shared files with a mock
+reminder scheduler; they do not send system notifications.
+Custom notifications were also checked in dark mode and at the largest accessibility text size.
+Physical-device signing and delivery remain unverified.
 
 The dedicated QA Simulator uses **Persistent** banners for manual testing;
 restore **Temporary** after QA. Run the main scheme's tests in Xcode with **Command-U**.
